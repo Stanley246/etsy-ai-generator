@@ -3,36 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A generator for creating unique Etsy product listings with AI.">
-    <meta property="og:title" content="Etsy AI Generator">
-    <meta property="og:description" content="Generate unique product listings for Etsy using AI technology.">
-    <meta property="og:image" content="path_to_image">
-    <meta property="og:url" content="https://etsi-ai-generator-url">
+    <meta name="description" content="Etsy AI Generator to create unique product descriptions with the help of Hugging Face AI API.">
+    <meta name="keywords" content="Etsy, AI, Generator, Product Description, Hugging Face">
     <title>Etsy AI Generator</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        body { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            font-family: Arial, sans-serif; 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
         }
-        .spinner { 
-            border: 8px solid rgba(0, 0, 0, 0.1); 
-            border-left-color: #333; 
-            border-radius: 50%; 
-            width: 50px; 
-            height: 50px; 
-            animation: spin 1s linear infinite; 
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, textarea {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ccc;
+            border-top: 5px solid #28a745;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="spinner"></div>
-    <h1>Generating your listing...</h1>
+    <div class="container">
+        <h1>Etsy AI Generator</h1>
+        <form id="generatorForm">
+            <input type="text" id="productName" placeholder="Product Name" required>
+            <input type="text" id="targetAudience" placeholder="Target Audience" required>
+            <input type="text" id="style" placeholder="Style" required>
+            <input type="text" id="keywords" placeholder="Keywords" required>
+            <button type="submit">Generate Description</button>
+            <div class="spinner" id="loadingSpinner"></div>
+        </form>
+    </div>
+    <script>
+        document.getElementById('generatorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('loadingSpinner').style.display = 'block';
+            const data = {
+                productName: document.getElementById('productName').value,
+                targetAudience: document.getElementById('targetAudience').value,
+                style: document.getElementById('style').value,
+                keywords: document.getElementById('keywords').value
+            };
+            fetch('https://api.huggingface.co/models/YOUR_MODEL_NAME', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer YOUR_API_TOKEN' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                document.getElementById('loadingSpinner').style.display = 'none';
+                // handle result here
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>
