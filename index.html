@@ -1,128 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Etsy Description Generator</title>
-<style>
-    /* Reset */
-    * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
-
-    body {
-        background: #f7f7f7;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 20px;
-    }
-
-    h1 {
-        color: #333;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-
-    .container {
-        background: #fff;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        max-width: 600px;
-        width: 100%;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 16px;
-    }
-
-    button {
-        width: 100%;
-        padding: 14px;
-        margin-top: 10px;
-        border: none;
-        border-radius: 8px;
-        background-color: #4CAF50;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
-
-    button:hover {
-        background-color: #45a049;
-    }
-
-    pre {
-        background: #f0f0f0;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-
-    footer {
-        margin-top: 30px;
-        font-size: 14px;
-        color: #888;
-        text-align: center;
-    }
-
-    @media (max-width: 640px) {
-        .container { padding: 20px; }
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A generator for creating unique Etsy product listings with AI.">
+    <meta property="og:title" content="Etsy AI Generator">
+    <meta property="og:description" content="Generate unique product listings for Etsy using AI technology.">
+    <meta property="og:image" content="path_to_image">
+    <meta property="og:url" content="https://etsi-ai-generator-url">
+    <title>Etsy AI Generator</title>
+    <style>
+        body { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
+        }
+        .spinner { 
+            border: 8px solid rgba(0, 0, 0, 0.1); 
+            border-left-color: #333; 
+            border-radius: 50%; 
+            width: 50px; 
+            height: 50px; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-
-<h1>✨ AI Etsy Product Description Generator ✨</h1>
-
-<div class="container">
-    <input id="product" placeholder="Product Name">
-    <input id="audience" placeholder="Target Audience">
-    <input id="style" placeholder="Style / Tone">
-    <input id="keywords" placeholder="Keywords (comma separated)">
-    
-    <button onclick="generate()">Generate Description</button>
-    
-    <pre id="result">Your AI-generated description will appear here...</pre>
-</div>
-
-<footer>
-Made with ❤️ using OpenAI and Cloudflare Workers
-</footer>
-
-<script>
-async function generate() {
-    const product = document.getElementById("product").value;
-    const audience = document.getElementById("audience").value;
-    const style = document.getElementById("style").value;
-    const keywords = document.getElementById("keywords").value;
-
-    // Show loading state
-    const resultBox = document.getElementById("result");
-    resultBox.textContent = "Generating description... ✨";
-
-    try {
-        const res = await fetch("/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ product, audience, style, keywords })
-        });
-
-        const data = await res.json();
-        resultBox.textContent = data.output;
-    } catch (error) {
-        resultBox.textContent = "Error generating description. Please try again.";
-        console.error(error);
-    }
-}
-</script>
-
+    <div class="spinner"></div>
+    <h1>Generating your listing...</h1>
 </body>
 </html>
