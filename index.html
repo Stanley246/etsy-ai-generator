@@ -8,21 +8,29 @@
 
 <style>
 
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Segoe UI, sans-serif;
+}
+
 body{
-font-family: Arial;
-background: linear-gradient(135deg,#667eea,#764ba2);
+background:linear-gradient(135deg,#667eea,#764ba2);
+min-height:100vh;
 display:flex;
+align-items:center;
 justify-content:center;
-padding:40px;
+padding:20px;
 }
 
 .container{
 background:white;
-padding:35px;
-border-radius:12px;
+padding:40px;
+border-radius:16px;
 max-width:700px;
 width:100%;
-box-shadow:0 20px 40px rgba(0,0,0,.25);
+box-shadow:0 20px 60px rgba(0,0,0,0.25);
 }
 
 h1{
@@ -32,44 +40,72 @@ margin-bottom:10px;
 
 .subtitle{
 text-align:center;
-margin-bottom:25px;
 color:#666;
+margin-bottom:25px;
 }
 
 input{
 width:100%;
 padding:12px;
+border:2px solid #e0e0e0;
 border-radius:8px;
-border:2px solid #eee;
 margin-bottom:15px;
 font-size:15px;
 }
 
+input:focus{
+outline:none;
+border-color:#667eea;
+}
+
 button{
+width:100%;
+padding:14px;
 background:#667eea;
 color:white;
 border:none;
-padding:12px;
 border-radius:8px;
+font-size:16px;
 font-weight:bold;
 cursor:pointer;
-width:100%;
+margin-top:5px;
 }
 
 button:hover{
 background:#5a6de0;
 }
 
-.output{
+.spinner{
+display:none;
+margin:25px auto;
+width:40px;
+height:40px;
+border:5px solid #eee;
+border-top:5px solid #667eea;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}
+
+.results{
+display:none;
 margin-top:25px;
 background:#f7f7f7;
 padding:20px;
-border-radius:8px;
+border-radius:10px;
 }
 
-.copyBtn{
-margin-top:8px;
+.section{
+margin-bottom:20px;
+}
+
+.copy{
 background:#333;
+margin-top:8px;
 }
 
 .counter{
@@ -78,21 +114,8 @@ color:#777;
 margin-top:4px;
 }
 
-.spinner{
-display:none;
-margin:auto;
-margin-top:20px;
-border:5px solid #eee;
-border-top:5px solid #667eea;
-border-radius:50%;
-width:40px;
-height:40px;
-animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-0%{transform:rotate(0)}
-100%{transform:rotate(360deg)}
+hr{
+margin:20px 0;
 }
 
 </style>
@@ -102,36 +125,42 @@ animation:spin 1s linear infinite;
 
 <div class="container">
 
-<h1>✨ Etsy AI Listing Generator</h1>
-<p class="subtitle">Generate titles, descriptions & tags instantly</p>
+<h1>✨ Etsy AI Product Description Generator</h1>
+<p class="subtitle">Generate SEO titles, descriptions and tags</p>
 
-<input id="product" placeholder="Product name">
+<input id="product" placeholder="Product name (e.g. Handmade Ceramic Mug)">
 <input id="audience" placeholder="Target audience">
-<input id="style" placeholder="Style or tone">
+<input id="tone" placeholder="Tone or style">
 <input id="keywords" placeholder="Keywords (comma separated)">
 
 <button id="generate">Generate Listing</button>
 
 <div class="spinner" id="spinner"></div>
 
-<div class="output" id="output" style="display:none">
+<div class="results" id="results">
 
+<div class="section">
 <h3>SEO Title</h3>
 <div id="title"></div>
-<div class="counter" id="titleCount"></div>
-<button class="copyBtn" onclick="copyText('title')">Copy Title</button>
+<div class="counter" id="titleCounter"></div>
+<button class="copy" onclick="copyText('title')">Copy Title</button>
+</div>
 
 <hr>
 
+<div class="section">
 <h3>Description</h3>
 <div id="description"></div>
-<button class="copyBtn" onclick="copyText('description')">Copy Description</button>
+<button class="copy" onclick="copyText('description')">Copy Description</button>
+</div>
 
 <hr>
 
+<div class="section">
 <h3>13 Etsy Tags</h3>
 <div id="tags"></div>
-<button class="copyBtn" onclick="copyText('tags')">Copy Tags</button>
+<button class="copy" onclick="copyText('tags')">Copy Tags</button>
+</div>
 
 </div>
 
@@ -142,11 +171,11 @@ animation:spin 1s linear infinite;
 import { pipeline } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0";
 
 const spinner = document.getElementById("spinner");
-const output = document.getElementById("output");
+const results = document.getElementById("results");
 
 let generator;
 
-async function loadModel(){
+async function loadAI(){
 
 spinner.style.display="block";
 
@@ -159,24 +188,26 @@ spinner.style.display="none";
 
 }
 
-loadModel();
+loadAI();
 
 document.getElementById("generate").onclick = async () => {
 
-const product = document.getElementById("product").value;
-const audience = document.getElementById("audience").value;
-const style = document.getElementById("style").value;
-const keywords = document.getElementById("keywords").value;
+const product=document.getElementById("product").value;
+const audience=document.getElementById("audience").value;
+const tone=document.getElementById("tone").value;
+const keywords=document.getElementById("keywords").value;
 
 const prompt = `
+You are an Etsy SEO expert.
+
 Create an Etsy listing.
 
 Product: ${product}
 Audience: ${audience}
-Tone: ${style}
+Tone: ${tone}
 Keywords: ${keywords}
 
-Return format:
+Return EXACTLY in this format:
 
 TITLE:
 DESCRIPTION:
@@ -185,34 +216,34 @@ TAGS:
 
 spinner.style.display="block";
 
-const result = await generator(prompt,{max_new_tokens:200});
+const output = await generator(prompt,{max_new_tokens:200});
 
 spinner.style.display="none";
 
-const text = result[0].generated_text;
+const text = output[0].generated_text;
 
 const titleMatch = text.match(/TITLE:(.*)/);
 const descMatch = text.match(/DESCRIPTION:([\s\S]*?)TAGS:/);
-const tagMatch = text.match(/TAGS:(.*)/);
+const tagsMatch = text.match(/TAGS:(.*)/);
 
 const title = titleMatch ? titleMatch[1].trim() : "";
-const desc = descMatch ? descMatch[1].trim() : "";
-const tags = tagMatch ? tagMatch[1].trim() : "";
+const description = descMatch ? descMatch[1].trim() : "";
+const tags = tagsMatch ? tagsMatch[1].trim() : "";
 
 document.getElementById("title").innerText = title;
-document.getElementById("description").innerText = desc;
+document.getElementById("description").innerText = description;
 document.getElementById("tags").innerText = tags;
 
-document.getElementById("titleCount").innerText =
+document.getElementById("titleCounter").innerText =
 title.length + " / 140 characters";
 
-output.style.display="block";
+results.style.display="block";
 
 };
 
 window.copyText = function(id){
 
-const text = document.getElementById(id).innerText;
+const text=document.getElementById(id).innerText;
 
 navigator.clipboard.writeText(text);
 
