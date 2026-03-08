@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Etsy Listing Generator</title>
+<title>Etsy AI Listing Generator</title>
 
 <style>
 
@@ -19,18 +19,18 @@ body{
 background:linear-gradient(135deg,#667eea,#764ba2);
 min-height:100vh;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 padding:20px;
 }
 
 .container{
 background:white;
-padding:40px;
-border-radius:16px;
+padding:35px;
+border-radius:14px;
 max-width:700px;
 width:100%;
-box-shadow:0 20px 60px rgba(0,0,0,0.25);
+box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
 
 h1{
@@ -47,8 +47,8 @@ margin-bottom:25px;
 input{
 width:100%;
 padding:12px;
-border:2px solid #e0e0e0;
 border-radius:8px;
+border:2px solid #e0e0e0;
 margin-bottom:15px;
 font-size:15px;
 }
@@ -66,13 +66,12 @@ color:white;
 border:none;
 border-radius:8px;
 font-size:16px;
-font-weight:bold;
+font-weight:600;
 cursor:pointer;
-margin-top:5px;
 }
 
 button:hover{
-background:#5a6de0;
+background:#5b6fe3;
 }
 
 .spinner{
@@ -103,9 +102,11 @@ border-radius:10px;
 margin-bottom:20px;
 }
 
-.copy{
-background:#333;
+.copyBtn{
 margin-top:8px;
+background:#333;
+padding:8px;
+font-size:14px;
 }
 
 .counter{
@@ -114,8 +115,25 @@ color:#777;
 margin-top:4px;
 }
 
-hr{
-margin:20px 0;
+.tags{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+margin-top:8px;
+}
+
+.tag{
+background:#e9ecff;
+padding:5px 8px;
+border-radius:6px;
+font-size:13px;
+}
+
+.status{
+text-align:center;
+margin-top:10px;
+font-size:14px;
+color:#666;
 }
 
 </style>
@@ -125,17 +143,18 @@ margin:20px 0;
 
 <div class="container">
 
-<h1>✨ Etsy AI Product Description Generator</h1>
-<p class="subtitle">Generate SEO titles, descriptions and tags</p>
+<h1>✨ Etsy AI Generator</h1>
+<p class="subtitle">Generate SEO titles, descriptions & tags</p>
 
 <input id="product" placeholder="Product name (e.g. Handmade Ceramic Mug)">
-<input id="audience" placeholder="Target audience">
-<input id="tone" placeholder="Tone or style">
+<input id="audience" placeholder="Target audience (e.g. Coffee lovers)">
+<input id="tone" placeholder="Tone or style (e.g. Warm and friendly)">
 <input id="keywords" placeholder="Keywords (comma separated)">
 
 <button id="generate">Generate Listing</button>
 
 <div class="spinner" id="spinner"></div>
+<div class="status" id="status">Loading AI model...</div>
 
 <div class="results" id="results">
 
@@ -143,7 +162,7 @@ margin:20px 0;
 <h3>SEO Title</h3>
 <div id="title"></div>
 <div class="counter" id="titleCounter"></div>
-<button class="copy" onclick="copyText('title')">Copy Title</button>
+<button class="copyBtn" onclick="copyText('title')">Copy Title</button>
 </div>
 
 <hr>
@@ -151,15 +170,15 @@ margin:20px 0;
 <div class="section">
 <h3>Description</h3>
 <div id="description"></div>
-<button class="copy" onclick="copyText('description')">Copy Description</button>
+<button class="copyBtn" onclick="copyText('description')">Copy Description</button>
 </div>
 
 <hr>
 
 <div class="section">
-<h3>13 Etsy Tags</h3>
-<div id="tags"></div>
-<button class="copy" onclick="copyText('tags')">Copy Tags</button>
+<h3>Etsy Tags</h3>
+<div class="tags" id="tags"></div>
+<button class="copyBtn" onclick="copyTags()">Copy Tags</button>
 </div>
 
 </div>
@@ -170,21 +189,20 @@ margin:20px 0;
 
 import { pipeline } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0";
 
-const spinner = document.getElementById("spinner");
-const results = document.getElementById("results");
+const spinner=document.getElementById("spinner");
+const status=document.getElementById("status");
+const results=document.getElementById("results");
 
 let generator;
 
 async function loadAI(){
-
-spinner.style.display="block";
 
 generator = await pipeline(
 "text2text-generation",
 "Xenova/flan-t5-base"
 );
 
-spinner.style.display="none";
+status.innerText="AI Ready";
 
 }
 
@@ -197,9 +215,7 @@ const audience=document.getElementById("audience").value;
 const tone=document.getElementById("tone").value;
 const keywords=document.getElementById("keywords").value;
 
-const prompt = `
-You are an Etsy SEO expert.
-
+const prompt=`
 Create an Etsy listing.
 
 Product: ${product}
@@ -207,35 +223,44 @@ Audience: ${audience}
 Tone: ${tone}
 Keywords: ${keywords}
 
-Return EXACTLY in this format:
+Return format:
 
-TITLE:
-DESCRIPTION:
-TAGS:
+TITLE: <seo title under 140 characters>
+
+DESCRIPTION: <engaging description>
+
+TAGS: <13 comma separated etsy tags>
 `;
 
 spinner.style.display="block";
 
-const output = await generator(prompt,{max_new_tokens:200});
+const output = await generator(prompt,{max_new_tokens:180});
 
 spinner.style.display="none";
 
-const text = output[0].generated_text;
+const text=output[0].generated_text;
 
-const titleMatch = text.match(/TITLE:(.*)/);
-const descMatch = text.match(/DESCRIPTION:([\s\S]*?)TAGS:/);
-const tagsMatch = text.match(/TAGS:(.*)/);
+const title = (text.match(/TITLE:(.*)/i)||["",""])[1].trim();
+const description = (text.match(/DESCRIPTION:([\s\S]*?)TAGS:/i)||["",""])[1].trim();
+const tagsText = (text.match(/TAGS:(.*)/i)||["",""])[1].trim();
 
-const title = titleMatch ? titleMatch[1].trim() : "";
-const description = descMatch ? descMatch[1].trim() : "";
-const tags = tagsMatch ? tagsMatch[1].trim() : "";
-
-document.getElementById("title").innerText = title;
-document.getElementById("description").innerText = description;
-document.getElementById("tags").innerText = tags;
+document.getElementById("title").innerText=title;
+document.getElementById("description").innerText=description;
 
 document.getElementById("titleCounter").innerText =
 title.length + " / 140 characters";
+
+const tagContainer=document.getElementById("tags");
+tagContainer.innerHTML="";
+
+const tagList = tagsText.split(",").slice(0,13);
+
+tagList.forEach(tag=>{
+const el=document.createElement("div");
+el.className="tag";
+el.innerText=tag.trim();
+tagContainer.appendChild(el);
+});
 
 results.style.display="block";
 
@@ -244,10 +269,17 @@ results.style.display="block";
 window.copyText = function(id){
 
 const text=document.getElementById(id).innerText;
-
 navigator.clipboard.writeText(text);
 
-alert("Copied!");
+}
+
+window.copyTags = function(){
+
+const tags=[...document.querySelectorAll(".tag")]
+.map(tag=>tag.innerText)
+.join(", ");
+
+navigator.clipboard.writeText(tags);
 
 }
 
